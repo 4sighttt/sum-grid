@@ -301,6 +301,24 @@
   const root = document.getElementById('sumgridApp');
   if (!root) return;
 
+  // --- SFX (GitHub Pages: 1.mp3 / 2.mp3 / 3.mp3 in repo root) ---
+  const __SFX = {
+    left: new Audio('1.mp3'),
+    right: new Audio('2.mp3'),
+    corner: new Audio('3.mp3'),
+  };
+  Object.values(__SFX).forEach(a => { try { a.preload = 'auto'; } catch(e) {} });
+
+  function playSfx(kind){
+    const a = __SFX[kind];
+    if (!a) return;
+    try { a.currentTime = 0; } catch(e) {}
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(()=>{});
+  }
+
+  if (!root) return;
+
 (() => {
   let N = 4;
 
@@ -463,12 +481,14 @@ const baseCell = (baseCellByN[N] ?? 60);
 
   function onCellLeftClick(r, c){
     if (excluded[r][c]) return;            // excluded -> cannot select
+    playSfx('left');
     selected[r][c] = selected[r][c] ? 0 : 1;
     render();
     updateStatus();
   }
 
   function onCellRightClick(r, c){
+    playSfx('right');
     excluded[r][c] = excluded[r][c] ? 0 : 1;
     if (excluded[r][c]) selected[r][c] = 0; // exclude clears selection
     render();
@@ -614,6 +634,7 @@ const baseCell = (baseCellByN[N] ?? 60);
               e.stopPropagation();
               return;
             }
+            playSfx('corner');
             const next = (N >= 7) ? 4 : (N + 1);
             setSize(next);
           });
@@ -630,6 +651,7 @@ const baseCell = (baseCellByN[N] ?? 60);
             if (lpCornerTimer) clearTimeout(lpCornerTimer);
             lpCornerTimer = setTimeout(() => {
               suppressCornerClick = true;
+              playSfx('corner');
               const prev = (N <= 4) ? 7 : (N - 1);
               setSize(prev);
             }, 520);
