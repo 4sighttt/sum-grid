@@ -1,0 +1,658 @@
+<!-- Sum Grid (Tistory paste-safe) -->
+<div id="sumgridApp" class="center">
+<div class="app">
+    <div class="card boardCard">
+    <div id="grid" class="gridWrap" aria-label="퍼즐 보드"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+
+/* Tistory container safety */
+#sumgridApp {
+  width: 100%;
+  max-width: 100%;
+  padding: 16px 12px 40px;
+  display: flex;
+  justify-content: center;
+}
+#sumgridApp.top { align-items: flex-start; }
+#sumgridApp.center { align-items: center; }
+#sumgridApp .app { max-width: 100%; }
+#sumgridApp .boardCard { max-width: 100%; overflow: auto; }
+
+#sumgridApp{
+      --bg:#0b0d12;
+      --panel:#111625;
+      --cell:#141b2e;
+      --cell2:#0f1526;
+      --text:#e7ecff;
+      --muted:#9aa6d3;
+      --ok:#39d98a;
+      --bad:#ff5c7a;
+      --accent:#a78bfa;
+      --shadow: 0 12px 32px rgba(0,0,0,.35);
+      --r: 16px;
+    }
+#sumgridApp *{box-sizing:border-box}
+#sumgridApp{
+      margin:0;
+      -webkit-user-select:none;
+      user-select:none;
+      -webkit-touch-callout:none;
+      background: radial-gradient(1200px 800px at 20% 10%, #182046 0%, var(--bg) 55%) fixed;
+      color:var(--text);
+      font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+      display:flex;
+      min-height:100svh;
+      min-height:100dvh;
+      align-items:center;
+      justify-content:center;
+      padding:16px 12px 40px;
+      overflow:auto;
+    }
+#sumgridApp body.top{ align-items:flex-start; }
+#sumgridApp body.center{ align-items:center; }
+#sumgridApp .app{
+      width: fit-content;
+      max-width: 100%;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+      justify-items: center;
+    }
+#sumgridApp .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+#sumgridApp .boardCard{ padding:16px; width: fit-content; max-width: 100%; overflow: auto; }
+#sumgridApp .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      margin-bottom:8px;
+    }
+#sumgridApp .title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      align-items:center;
+      text-align:center;
+    }
+#sumgridApp .title .h{
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:16px;
+    }
+#sumgridApp .title .s{
+      color:var(--muted);
+      font-size:12px;
+    }
+#sumgridApp .btnRow{ display:flex; gap:8px; flex-wrap:wrap; }
+#sumgridApp button{
+      border:1px solid rgba(255,255,255,.10);
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:650;
+      transition: transform .04s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+#sumgridApp button:hover{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.16); }
+#sumgridApp button:active{ transform: translateY(1px); }
+#sumgridApp button:focus{ outline: none; }
+#sumgridApp button:focus-visible{ outline: none; box-shadow: none; }
+#sumgridApp .sizeBar{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      width:100%;
+      padding: 0;
+    }
+#sumgridApp .sizeBtn{
+      height: 28px;
+      min-width: 28px;
+      padding: 0 10px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: rgba(255,255,255,.88);
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      box-shadow: none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      line-height: 1;
+    }
+#sumgridApp .sizeBtn:hover{
+      border-color: rgba(167,139,250,.55);
+      box-shadow: 0 0 0 6px rgba(167,139,250,.08);
+    }
+#sumgridApp .primary{
+      background: linear-gradient(180deg, rgba(167,139,250,.40), rgba(167,139,250,.18));
+      border-color: rgba(167,139,250,.45);
+    }
+#sumgridApp .primary:hover{ background: linear-gradient(180deg, rgba(167,139,250,.48), rgba(167,139,250,.22)); }
+#sumgridApp .ghost{
+      background: transparent;
+    }
+#sumgridApp .gridWrap{
+      display:grid;
+      grid-template-columns: repeat(var(--gN, 5), var(--cell, 72px));
+      grid-template-rows: repeat(var(--gN, 5), var(--cell, 72px));
+      gap: var(--gap, 10px);
+      justify-content:center;
+      align-items:center;
+      margin-top:10px;
+    }
+#sumgridApp .cell{
+      overflow: visible;
+      width: var(--cell,72px); height: var(--cell,72px);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      user-select:none;
+    }
+#sumgridApp .targetCell{
+      background: linear-gradient(180deg, rgba(167,139,250,.12), rgba(0,0,0,.08));
+      border-color: rgba(167,139,250,.28);
+      box-shadow: 0 8px 18px rgba(0,0,0,.20);
+    }
+#sumgridApp .cornerBtn{
+      width: var(--cell,72px);
+      height: var(--cell,72px);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(167,139,250,.22), rgba(167,139,250,.08));
+      border: 1px solid rgba(167,139,250,.42);
+      color: rgba(255,255,255,.94);
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: .2px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.24);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor: pointer;
+      user-select:none;
+    }
+#sumgridApp .cornerBtn:hover{
+      background: linear-gradient(180deg, rgba(167,139,250,.28), rgba(167,139,250,.10));
+      border-color: rgba(167,139,250,.55);
+    }
+#sumgridApp .cornerBtn:active{ transform: translateY(1px); }
+#sumgridApp .numBtn{
+      width: var(--cell,72px); height: var(--cell,72px);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:.2px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+          touch-action: manipulation;
+      -webkit-touch-callout: none;
+    }
+#sumgridApp .numBtn:hover{ background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.03)); }
+#sumgridApp .numBtn.selected{
+      border-color: rgba(57,217,138,.65);
+      background: linear-gradient(180deg, rgba(57,217,138,.24), rgba(57,217,138,.08));
+    }
+#sumgridApp /* Excluded (right-click) */
+    .numBtn.excluded{
+      opacity: .65;
+      filter: grayscale(.85) saturate(.2);
+      border-color: rgba(255,255,255,.10);
+      background: rgba(0,0,0,.28);
+      box-shadow: none;
+      cursor: not-allowed;
+      text-decoration: none;
+    }
+#sumgridApp .badge{
+      position:absolute;
+      top:-10px;
+      left:50%;
+      transform:translateX(-50%);
+      font-size:11px;
+      font-weight:800;
+      padding:3px 10px;
+      min-width: 28px;
+      text-align:center;
+      white-space: nowrap;
+      line-height: 1.1;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.45);
+      color:var(--muted);
+      box-shadow: 0 6px 14px rgba(0,0,0,.35);
+      z-index: 2;
+      pointer-events:none;
+    }
+#sumgridApp .badge.ok{ color: var(--ok); border-color: rgba(57,217,138,.45); background: rgba(57,217,138,.08); }
+#sumgridApp .badge.bad{ color: var(--bad); border-color: rgba(255,92,122,.45); background: rgba(255,92,122,.08); }
+#sumgridApp .target{
+      font-size:18px;
+      font-weight:900;
+      color: rgba(255,255,255,.92);
+    }
+#sumgridApp .target.ok{ color: var(--ok); }
+#sumgridApp .target.bad{ color: var(--bad); }
+#sumgridApp .sub{
+      color:var(--muted);
+      font-size:12px;
+    }
+#sumgridApp .kpi{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+#sumgridApp .kpi .box{
+      padding:12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+#sumgridApp .kpi .label{ color:var(--muted); font-size:12px; }
+#sumgridApp .kpi .value{ font-weight:900; font-size:18px; margin-top:2px; }
+#sumgridApp .help{
+      padding:12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border:1px dashed rgba(255,255,255,.14);
+      color:var(--muted);
+      font-size:12px;
+    }
+#sumgridApp .toast{
+      padding:12px 14px;
+      border-radius: 14px;
+      border:1px solid rgba(57,217,138,.45);
+      background: rgba(57,217,138,.08);
+      color: var(--ok);
+      font-weight:850;
+      display:none;
+    }
+#sumgridApp .toast.show{ display:block; }
+#sumgridApp .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+</style>
+
+<script>
+(() => {
+  const root = document.getElementById('sumgridApp');
+  if (!root) return;
+
+(() => {
+  let N = 4;
+
+  const elGrid = root.querySelector('#grid');
+  let stage = 1;
+  let grid = [];           // numbers
+  let rowTarget = [];
+  let colTarget = [];
+  let selected = [];       // confirmed selection (0/1)
+  let excluded = [];       // excluded (0/1)
+
+
+  function applyGridLayout(){
+    // grid is (N+1) × (N+1)
+    const gN = N + 1;
+    elGrid.style.setProperty('--gN', String(gN));
+
+    // Base sizes by N
+    const baseCellByN = {4:72, 5:68, 6:62, 7:56};
+    const gapByN      = {4:10, 5:10, 6:9, 7:8};
+
+    const gap = (gapByN[N] ?? 9);
+
+    // Fit to available width (mobile-friendly).
+    // Prefer visualViewport width; fall back to wrapper width; then window.innerWidth.
+    const vv = window.visualViewport;
+    const vw = Math.max(320, (vv && vv.width) ? vv.width : (root.getBoundingClientRect().width || window.innerWidth || 0));
+    // Account for wrapper/body padding and keep a small buffer so 7x7 never clips.
+    const available = Math.max(280, vw - 32);
+    const fitCell = Math.floor((available - gap * (gN - 1)) / gN);
+const baseCell = (baseCellByN[N] ?? 60);
+    const cell = Math.max(34, Math.min(baseCell, fitCell));
+
+    elGrid.style.setProperty('--cell', cell + 'px');
+    elGrid.style.setProperty('--gap', gap + 'px');
+  }
+
+  function setSize(n){
+    N = n;
+    applyGridLayout();
+    stage = 1;
+    generatePuzzle();
+  }
+
+  // Refit on orientation/viewport changes (mobile address bar, rotation)
+  window.addEventListener('resize', () => {
+    applyGridLayout();
+    render();
+  }, {passive:true});
+
+  function updateBodyFit(){
+    const appEl = root.querySelector('.app');
+    if (!appEl) return;
+    const vv = window.visualViewport;
+    const vh = (vv && vv.height) ? vv.height : (window.innerHeight || 0);
+    const appH = appEl.scrollHeight || appEl.getBoundingClientRect().height;
+    const needsTop = (appH + 8) > vh;
+    root.classList.toggle('top', needsTop);
+    root.classList.toggle('center', !needsTop);
+  }
+
+  // iOS Safari address bar / visual viewport changes
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', () => { applyGridLayout(); render(); }, {passive:true});
+    window.visualViewport.addEventListener('scroll', () => { updateBodyFit(); }, {passive:true});
+  }
+
+
+  function randInt(min, maxInclusive){
+    return Math.floor(Math.random() * (maxInclusive - min + 1)) + min;
+  }
+
+  function makeEmptyMask(){
+    return Array.from({length:N}, () => Array.from({length:N}, () => 0));
+  }
+
+  function generatePuzzle(){
+    // 1) grid numbers 1..9
+    grid = Array.from({length:N}, () => Array.from({length:N}, () => randInt(1,9)));
+
+    // 2) random mask just to generate targets
+    const ans = makeEmptyMask();
+
+    // ensure each row picks at least 1 and at most N-1
+    for (let r=0; r<N; r++){
+      const k = randInt(1, N-1);
+      const cols = [...Array(N).keys()].sort(()=>Math.random()-0.5).slice(0,k);
+      cols.forEach(c => ans[r][c] = 1);
+    }
+    // ensure each column has at least 1 selected
+    for (let c=0; c<N; c++){
+      let cnt = 0;
+      for (let r=0; r<N; r++) cnt += ans[r][c];
+      if (cnt === 0){
+        const rPick = randInt(0, N-1);
+        ans[rPick][c] = 1;
+      }
+    }
+
+    // 3) compute targets
+    rowTarget = Array(N).fill(0);
+    colTarget = Array(N).fill(0);
+    for (let r=0; r<N; r++){
+      for (let c=0; c<N; c++){
+        if (ans[r][c]){
+          rowTarget[r] += grid[r][c];
+          colTarget[c] += grid[r][c];
+        }
+      }
+    }
+
+    // 4) reset player state
+    selected = makeEmptyMask();
+    excluded = makeEmptyMask();
+
+    render();
+    updateStatus();
+  }
+
+  function sumRow(mask, r){
+    let s = 0;
+    for (let c=0; c<N; c++) s += grid[r][c] * (mask[r][c] ? 1 : 0);
+    return s;
+  }
+  function sumCol(mask, c){
+    let s = 0;
+    for (let r=0; r<N; r++) s += grid[r][c] * (mask[r][c] ? 1 : 0);
+    return s;
+  }
+
+  function getRowState(r){
+    const s = sumRow(selected, r);
+    if (s === rowTarget[r]) return "ok";
+    if (s > rowTarget[r]) return "bad";
+    return "idle";
+  }
+  function getColState(c){
+    const s = sumCol(selected, c);
+    if (s === colTarget[c]) return "ok";
+    if (s > colTarget[c]) return "bad";
+    return "idle";
+  }
+
+  function isCleared(){
+    for (let r=0; r<N; r++){
+      if (sumRow(selected, r) !== rowTarget[r]) return false;
+    }
+    for (let c=0; c<N; c++){
+      if (sumCol(selected, c) !== colTarget[c]) return false;
+    }
+    return true;
+  }
+
+  function updateStatus(){
+    if (isCleared()){
+      stage++;
+      generatePuzzle();
+    }
+  }
+
+  function onCellLeftClick(r, c){
+    if (excluded[r][c]) return;            // excluded -> cannot select
+    selected[r][c] = selected[r][c] ? 0 : 1;
+    render();
+    updateStatus();
+  }
+
+  function onCellRightClick(r, c){
+    excluded[r][c] = excluded[r][c] ? 0 : 1;
+    if (excluded[r][c]) selected[r][c] = 0; // exclude clears selection
+    render();
+    updateStatus();
+  }
+
+  function render(){
+    elGrid.innerHTML = "";
+
+    // 5×5 layout:
+    // (r,c) [0..3,0..3] => number buttons
+    // (r,4) => row target & state
+    // (4,c) => col target & state
+    // (4,4) => corner
+    for (let r=0; r<N+1; r++){
+      for (let c=0; c<N+1; c++){
+        if (r < N && c < N){
+          const b = document.createElement('button');
+          b.className = 'numBtn';
+          b.type = 'button';
+          b.textContent = grid[r][c];
+
+          if (selected[r][c]) b.classList.add('selected');
+          if (excluded[r][c]) b.classList.add('excluded');
+
+          // Click: select / toggle
+          let suppressClick = false;
+
+          b.addEventListener('click', (e) => {
+            if (suppressClick){
+              suppressClick = false;
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            onCellLeftClick(r, c);
+          });
+
+          // Right-click (desktop): exclude / include
+          b.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            onCellRightClick(r, c);
+          });
+
+          // Long-press (touch): exclude / include
+          // - short tap => select (handled by click)
+          // - long press => exclude, and suppress the subsequent click
+          let lpTimer = null;
+          let moved = false;
+
+          const isTouchPointer = (ev) => (ev && ev.pointerType === 'touch');
+          const isCoarse = () => (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+
+          b.addEventListener('pointerdown', (ev) => {
+            if (!isTouchPointer(ev) && !isCoarse()) return;
+            try{ ev.preventDefault(); }catch(_){ }
+            try{ b.setPointerCapture(ev.pointerId); }catch(_){ }
+            if (excluded[r][c]) {
+              // still allow long-press to un-exclude
+            }
+            moved = false;
+            if (lpTimer) clearTimeout(lpTimer);
+
+            lpTimer = setTimeout(() => {
+              if (moved) return;
+              suppressClick = true;
+              onCellRightClick(r, c);
+            }, 520);
+          });
+
+          b.addEventListener('pointermove', (ev) => {
+            if (!lpTimer) return;
+            // any movement cancels long-press
+            moved = true;
+            clearTimeout(lpTimer);
+            lpTimer = null;
+          });
+
+          const clearLP = () => {
+            if (lpTimer) clearTimeout(lpTimer);
+            lpTimer = null;
+          };
+
+          b.addEventListener('pointerup', clearLP);
+          b.addEventListener('pointercancel', clearLP);
+
+          elGrid.appendChild(b);
+        } else if (r < N && c === N){
+          // row target cell
+          const d = document.createElement('div');
+          d.className = 'cell targetCell';
+          const state = getRowState(r);
+
+          const badge = document.createElement('div');
+          badge.className = 'badge';
+          badge.textContent = `${sumRow(selected,r)}`; // show only current sum
+          if (state === "ok") badge.classList.add('ok');
+          if (state === "bad") badge.classList.add('bad');
+
+          const t = document.createElement('div');
+          t.className = 'target';
+          t.textContent = rowTarget[r];
+          if (state === "ok") t.classList.add('ok');
+          if (state === "bad") t.classList.add('bad');
+
+          d.appendChild(badge);
+          d.appendChild(t);
+          elGrid.appendChild(d);
+        } else if (r === N && c < N){
+          // col target cell
+          const d = document.createElement('div');
+          d.className = 'cell targetCell';
+          const state = getColState(c);
+
+          const badge = document.createElement('div');
+          badge.className = 'badge';
+          badge.textContent = `${sumCol(selected,c)}`; // show only current sum
+          if (state === "ok") badge.classList.add('ok');
+          if (state === "bad") badge.classList.add('bad');
+
+          const t = document.createElement('div');
+          t.className = 'target';
+          t.textContent = colTarget[c];
+          if (state === "ok") t.classList.add('ok');
+          if (state === "bad") t.classList.add('bad');
+
+          d.appendChild(badge);
+          d.appendChild(t);
+          elGrid.appendChild(d);
+        } else {
+          // corner: size cycle control
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'cornerBtn';
+          b.textContent = String(N);
+
+          // Tap: increase size (4→5→6→7→4)
+          let suppressCornerClick = false;
+          b.addEventListener('click', (e) => {
+            if (suppressCornerClick){
+              suppressCornerClick = false;
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            const next = (N >= 7) ? 4 : (N + 1);
+            setSize(next);
+          });
+
+          // Long-press (touch): decrease size (7→6→5→4→7)
+          let lpCornerTimer = null;
+          const isCoarse = () => (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+
+          b.addEventListener('pointerdown', (ev) => {
+            if (!(ev && ev.pointerType === 'touch') && !isCoarse()) return;
+            try{ ev.preventDefault(); }catch(_){ }
+            try{ b.setPointerCapture(ev.pointerId); }catch(_){ }
+
+            if (lpCornerTimer) clearTimeout(lpCornerTimer);
+            lpCornerTimer = setTimeout(() => {
+              suppressCornerClick = true;
+              const prev = (N <= 4) ? 7 : (N - 1);
+              setSize(prev);
+            }, 520);
+          });
+
+          const clearCornerLP = () => {
+            if (lpCornerTimer) clearTimeout(lpCornerTimer);
+            lpCornerTimer = null;
+          };
+
+          b.addEventListener('pointerup', clearCornerLP);
+          b.addEventListener('pointercancel', clearCornerLP);
+          b.addEventListener('pointermove', clearCornerLP);
+
+          elGrid.appendChild(b);
+        }
+      }
+    }
+
+    updateBodyFit();
+  }
+    // init
+  setSize(4);
+})();
+})();
+</script>
