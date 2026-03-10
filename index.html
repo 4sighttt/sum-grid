@@ -156,7 +156,41 @@
       justify-content:center;
       align-items:center;
       margin-top:10px;
+      position:relative;
     }
+#sumgridApp .clearText{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: clamp(28px, 9vw, 56px);
+      font-weight: 950;
+      letter-spacing: .08em;
+      color: rgba(57,217,138,.92);
+      text-shadow: 0 0 16px rgba(57,217,138,.35), 0 0 30px rgba(57,217,138,.25);
+      pointer-events:none;
+      z-index:4;
+      animation: sumgridClearPop .9s ease-out both;
+    }
+#sumgridApp .clearFlash{
+      animation: sumgridClearFlash .7s ease-out;
+    }
+#sumgridApp .targetCell.clearFlash .target,
+#sumgridApp .targetCell.clearFlash .badge{
+      color: var(--ok);
+      border-color: rgba(57,217,138,.45);
+    }
+@keyframes sumgridClearFlash {
+  0% { transform: scale(1); box-shadow: 0 8px 18px rgba(0,0,0,.22); }
+  35% { transform: scale(1.05); box-shadow: 0 0 0 2px rgba(57,217,138,.35), 0 12px 24px rgba(0,0,0,.24); }
+  100% { transform: scale(1); }
+}
+@keyframes sumgridClearPop {
+  0% { opacity: 0; transform: scale(.9); }
+  25% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 0; transform: scale(1); }
+}
 #sumgridApp .cell{
       overflow: visible;
       width: var(--cell,72px); height: var(--cell,72px);
@@ -329,6 +363,8 @@
   let colTarget = [];
   let selected = [];       // confirmed selection (0/1)
   let excluded = [];       // excluded (0/1)
+  let isClearing = false;
+  let clearTimer = null;
 
 
   function applyGridLayout(){
@@ -396,6 +432,11 @@ const baseCell = (baseCellByN[N] ?? 60);
   }
 
   function generatePuzzle(){
+    if (clearTimer){
+      clearTimeout(clearTimer);
+      clearTimer = null;
+    }
+    isClearing = false;
     // 1) grid numbers 1..9
     grid = Array.from({length:N}, () => Array.from({length:N}, () => randInt(1,9)));
 
@@ -473,13 +514,20 @@ const baseCell = (baseCellByN[N] ?? 60);
   }
 
   function updateStatus(){
-    if (isCleared()){
+    if (isClearing) return;
+    if (!isCleared()) return;
+
+    isClearing = true;
+    render();
+
+    clearTimer = setTimeout(() => {
       stage++;
       generatePuzzle();
-    }
+    }, 900);
   }
 
   function onCellLeftClick(r, c){
+    if (isClearing) return;
     if (excluded[r][c]) return;            // excluded -> cannot select
     playSfx('left');
     selected[r][c] = selected[r][c] ? 0 : 1;
@@ -488,6 +536,7 @@ const baseCell = (baseCellByN[N] ?? 60);
   }
 
   function onCellRightClick(r, c){
+    if (isClearing) return;
     playSfx('right');
     excluded[r][c] = excluded[r][c] ? 0 : 1;
     if (excluded[r][c]) selected[r][c] = 0; // exclude clears selection
@@ -512,6 +561,7 @@ const baseCell = (baseCellByN[N] ?? 60);
           b.textContent = grid[r][c];
 
           if (selected[r][c]) b.classList.add('selected');
+          if (isClearing && selected[r][c]) b.classList.add('clearFlash');
           if (excluded[r][c]) b.classList.add('excluded');
 
           // Click: select / toggle
@@ -580,6 +630,7 @@ const baseCell = (baseCellByN[N] ?? 60);
           // row target cell
           const d = document.createElement('div');
           d.className = 'cell targetCell';
+          if (isClearing) d.classList.add('clearFlash');
           const state = getRowState(r);
 
           const badge = document.createElement('div');
@@ -601,6 +652,7 @@ const baseCell = (baseCellByN[N] ?? 60);
           // col target cell
           const d = document.createElement('div');
           d.className = 'cell targetCell';
+          if (isClearing) d.classList.add('clearFlash');
           const state = getColState(c);
 
           const badge = document.createElement('div');
@@ -669,6 +721,13 @@ const baseCell = (baseCellByN[N] ?? 60);
           elGrid.appendChild(b);
         }
       }
+    }
+
+    if (isClearing){
+      const clearText = document.createElement('div');
+      clearText.className = 'clearText';
+      clearText.textContent = 'CLEAR';
+      elGrid.appendChild(clearText);
     }
 
     updateBodyFit();
