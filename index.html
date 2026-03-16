@@ -179,7 +179,7 @@ html, body {
       text-shadow: 0 0 16px rgba(57,217,138,.35), 0 0 30px rgba(57,217,138,.25);
       pointer-events:none;
       z-index:4;
-      animation: sumgridClearPop .9s ease-out both;
+      animation: sumgridClearPop 3s ease-out both;
     }
 #sumgridApp .clearFlash{
       animation: sumgridClearFlash .7s ease-out;
@@ -196,7 +196,8 @@ html, body {
 }
 @keyframes sumgridClearPop {
   0% { opacity: 0; transform: scale(.9); }
-  25% { opacity: 1; transform: scale(1.06); }
+  15% { opacity: 1; transform: scale(1.08); }
+  70% { opacity: 1; transform: scale(1.04); }
   100% { opacity: 0; transform: scale(1); }
 }
 #sumgridApp .cell{
@@ -344,9 +345,9 @@ html, body {
   if (!root) return;
 
   // --- SFX: AudioContext + pool ---
-  const __SFX_SRC = { left: '1.mp3', right: '2.mp3', corner: '3.mp3' };
+  const __SFX_SRC = { left: '1.mp3', right: '2.mp3', corner: '3.mp3', clear: '4.mp3' };
   const __SFX_BUF = {};
-  const __SFX_POOL = { left: [], right: [], corner: [] };
+  const __SFX_POOL = { left: [], right: [], corner: [], clear: [] };
   const POOL_SIZE = 3;
   let __actx = null;
 
@@ -584,12 +585,13 @@ html, body {
     if (!isCleared()) return;
 
     isClearing = true;
+    playSfx('clear');
     render();
 
     clearTimer = setTimeout(() => {
       stage++;
       generatePuzzle();
-    }, 900);
+    }, 3200);
   }
 
   function onCellLeftClick(r, c){
