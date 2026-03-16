@@ -1,4 +1,12 @@
 <!-- Sum Grid (Tistory paste-safe) -->
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+}
+</style>
 <div id="sumgridApp" class="center">
 <div class="app">
     <div class="card boardCard">
@@ -335,20 +343,72 @@
   const root = document.getElementById('sumgridApp');
   if (!root) return;
 
-  // --- SFX (GitHub Pages: 1.mp3 / 2.mp3 / 3.mp3 in repo root) ---
-  const __SFX = {
-    left: new Audio('1.mp3'),
-    right: new Audio('2.mp3'),
-    corner: new Audio('3.mp3'),
-  };
-  Object.values(__SFX).forEach(a => { try { a.preload = 'auto'; } catch(e) {} });
+  // --- SFX: AudioContext + pool ---
+  const __SFX_SRC = { left: '1.mp3', right: '2.mp3', corner: '3.mp3' };
+  const __SFX_BUF = {};
+  const __SFX_POOL = { left: [], right: [], corner: [] };
+  const POOL_SIZE = 3;
+  let __actx = null;
+
+  function getActx(){
+    if (!__actx){
+      try { __actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    }
+    if (__actx && __actx.state === 'suspended'){
+      try { __actx.resume(); } catch(e){}
+    }
+    return __actx;
+  }
+
+  function loadBuf(kind){
+    const actx = getActx();
+    if (!actx || __SFX_BUF[kind]) return;
+    fetch(__SFX_SRC[kind])
+      .then(r => r.arrayBuffer())
+      .then(ab => actx.decodeAudioData(ab))
+      .then(buf => {
+        __SFX_BUF[kind] = buf;
+      }).catch(()=>{});
+  }
+
+  // 사용자 첫 터치/클릭 시 AudioContext 언락 + 버퍼 로드
+  function unlockAudio(){
+    getActx();
+    Object.keys(__SFX_SRC).forEach(loadBuf);
+    document.removeEventListener('pointerdown', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+  }
+  document.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
+  document.addEventListener('click', unlockAudio, { once: true, passive: true });
+
+  // 초기 로드 시도 (자동재생 정책으로 실패해도 unlock 후 재시도)
+  Object.keys(__SFX_SRC).forEach(loadBuf);
 
   function playSfx(kind){
-    const a = __SFX[kind];
-    if (!a) return;
-    try { a.currentTime = 0; } catch(e) {}
-    const p = a.play();
-    if (p && typeof p.catch === 'function') p.catch(()=>{});
+    const actx = getActx();
+    const buf = __SFX_BUF[kind];
+    if (!actx || !buf) {
+      // fallback: 버퍼 없으면 pool Audio 사용
+      if (!__SFX_POOL[kind] || __SFX_POOL[kind].length === 0){
+        for(let i=0;i<POOL_SIZE;i++){
+          const a = new Audio(__SFX_SRC[kind]);
+          a.preload = 'auto';
+          __SFX_POOL[kind].push(a);
+        }
+      }
+      const pool = __SFX_POOL[kind];
+      const a = pool.find(x => x.paused || x.ended) || pool[0];
+      try { a.currentTime = 0; } catch(e){}
+      try { const p = a.play(); if(p) p.catch(()=>{}); } catch(e){}
+      return;
+    }
+    try {
+      if (actx.state === 'suspended') actx.resume();
+      const src = actx.createBufferSource();
+      src.buffer = buf;
+      src.connect(actx.destination);
+      src.start(0);
+    } catch(e){}
   }
 
   if (!root) return;
