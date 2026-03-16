@@ -276,7 +276,7 @@ html, body {
       top:-10px;
       left:50%;
       transform:translateX(-50%);
-      font-size:11px;
+      font-size: var(--fs-badge, 11px);
       font-weight:800;
       padding:3px 10px;
       min-width: 28px;
@@ -436,9 +436,11 @@ html, body {
     const vh = (vv && vv.height) ? vv.height : (window.innerHeight || 0);
 
     // 너비/높이 중 작은 값 기준으로 꽉 채움 (패딩 32px 확보)
-    const PADDING = 48;
-    const maxFromW = Math.max(280, vw - PADDING);
-    const maxFromH = Math.max(280, vh - PADDING);
+    // PC 브라우저 UI(탭바+주소창) 고려해 높이 여백을 더 넉넉히
+    const padW = 48;
+    const padH = Math.max(80, vh * 0.12);
+    const maxFromW = Math.max(280, vw - padW);
+    const maxFromH = Math.max(280, vh - padH);
     const available = Math.min(maxFromW, maxFromH);
 
     const gap = Math.max(6, Math.floor(available * 0.018));
@@ -450,8 +452,10 @@ html, body {
     // 셀 크기에 비례한 폰트 크기
     const fsCell = Math.max(14, Math.round(cell * 0.42));
     const fsTarget = Math.max(12, Math.round(cell * 0.34));
+    const fsBadge = Math.max(10, Math.round(cell * 0.26));
     elGrid.style.setProperty('--fs-cell', fsCell + 'px');
     elGrid.style.setProperty('--fs-target', fsTarget + 'px');
+    elGrid.style.setProperty('--fs-badge', fsBadge + 'px');
   }
 
   function setSize(n){
