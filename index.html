@@ -428,25 +428,21 @@ html, body {
 
 
   function applyGridLayout(){
-    // grid is (N+1) × (N+1)
     const gN = N + 1;
     elGrid.style.setProperty('--gN', String(gN));
 
-    // Base sizes by N
-    const baseCellByN = {4:72, 5:68, 6:62, 7:56};
-    const gapByN      = {4:10, 5:10, 6:9, 7:8};
-
-    const gap = (gapByN[N] ?? 9);
-
-    // Fit to available width (mobile-friendly).
-    // Prefer visualViewport width; fall back to wrapper width; then window.innerWidth.
     const vv = window.visualViewport;
-    const vw = Math.max(320, (vv && vv.width) ? vv.width : (root.getBoundingClientRect().width || window.innerWidth || 0));
-    // Account for wrapper/body padding and keep a small buffer so 7x7 never clips.
-    const available = Math.max(280, vw - 32);
-    const fitCell = Math.floor((available - gap * (gN - 1)) / gN);
-const baseCell = (baseCellByN[N] ?? 60);
-    const cell = Math.max(34, Math.min(baseCell, fitCell));
+    const vw = (vv && vv.width)  ? vv.width  : (window.innerWidth  || 0);
+    const vh = (vv && vv.height) ? vv.height : (window.innerHeight || 0);
+
+    // 너비/높이 중 작은 값 기준으로 꽉 채움 (패딩 32px 확보)
+    const PADDING = 32;
+    const maxFromW = Math.max(280, vw - PADDING);
+    const maxFromH = Math.max(280, vh - PADDING);
+    const available = Math.min(maxFromW, maxFromH);
+
+    const gap = Math.max(6, Math.floor(available * 0.018));
+    const cell = Math.max(34, Math.floor((available - gap * (gN - 1)) / gN));
 
     elGrid.style.setProperty('--cell', cell + 'px');
     elGrid.style.setProperty('--gap', gap + 'px');
